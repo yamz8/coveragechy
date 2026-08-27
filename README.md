@@ -104,18 +104,71 @@ decision for any individual.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/yamz8/coveragechy
+omarchy plugin add https://github.com/yamz8/coveragechy.git --enable
 ```
 
-## Development
+`omarchy plugin add` clones the repository, validates the manifest, and installs
+it as `yamz8.coveragechy`. Update later with `omarchy plugin update yamz8.coveragechy`.
+
+## Install from a local checkout
 
 ```bash
-node --test tests/coverage.test.mjs
-omarchy plugin validate .
+cp -R ./coveragechy ~/.config/omarchy/plugins/yamz8.coveragechy
+omarchy plugin validate ~/.config/omarchy/plugins/yamz8.coveragechy
+omarchy plugin enable yamz8.coveragechy
 ```
 
-All request building and response parsing lives in `Coverage.js` so it can be
-tested outside QML.
+Plugin files hot reload. If the widget does not appear immediately, run:
+
+```bash
+omarchy-shell shell rescanPlugins
+```
+
+## Remove
+
+```bash
+omarchy plugin disable yamz8.coveragechy
+omarchy plugin remove yamz8.coveragechy
+```
+
+Removing the plugin takes the widget out of the bar and deletes
+`~/.config/omarchy/plugins/yamz8.coveragechy`. The plugin writes nothing outside that
+folder and never modifies your Omarchy configuration, so nothing is left behind.
+
+## Use
+
+- Left-click the shield icon to open the coverage finder.
+- Right-click it to open the Medicare Coverage Database search page.
+- Press `Enter` to search, then `Enter` again to copy the selected document id.
+- Press `Ctrl+Enter` to open the determination on cms.gov.
+- Press `Up`/`Down` to choose a result, `Esc` to close, or `Tab` to switch
+  bar panels.
+
+The bar editor exposes every setting below. For example:
+
+```bash
+omarchy bar set yamz8.coveragechy defaultScope local
+omarchy bar set yamz8.coveragechy resultLimit 10
+```
+
+## Validate
+
+```bash
+omarchy plugin validate .
+node --test tests/coverage.test.mjs
+/usr/lib/qt6/bin/qmlformat Coveragechy.qml >/dev/null
+```
+
+## Data source
+
+- [Medicare Coverage Database](https://www.cms.gov/medicare-coverage-database/search.aspx)
+- [CMS Coverage MCP server](https://github.com/anthropics/healthcare), hosted at
+  `https://hcls.mcp.claude.com/cms_coverage/mcp`
+
+Coverage determinations are published by the U.S. Centers for Medicare &
+Medicaid Services. The plugin reads them through the hosted MCP server
+above rather than `api.coverage.cms.gov`, which is CloudFront-blocked by
+country. No API key or account is required.
 
 ## License
 
