@@ -279,12 +279,18 @@ Panel {
     // The text is written to the field rather than to root.query, because the
     // field owns the query once it has been typed in and would otherwise keep
     // showing the previous term.
-    function lookup(query: string): string {
+    // The optional second argument picks the scope, so a keybinding can go
+    // straight to the local determinations:
+    //   omarchy-shell yamz8.coveragechy lookup "oxygen" local
+    function lookup(query: string, scope: string): string {
       var normalized = String(query || "").trim();
       if (normalized === "")
         return "empty query";
 
       root.open();
+      if (String(scope || "").trim() !== "")
+        root.scope = Coverage.scopeKey(scope);
+
       searchField.text = normalized;
       Qt.callLater(function () {
         root.runSearch();

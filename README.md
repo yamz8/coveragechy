@@ -62,12 +62,14 @@ bar icon opens the coverage database search page.
 ## Scripting
 
 ```bash
-omarchy-shell yamz8.coveragechy lookup "acupuncture"   # opens the panel and searches
+omarchy-shell yamz8.coveragechy lookup "acupuncture"         # opens the panel and searches
+omarchy-shell yamz8.coveragechy lookup "oxygen" local        # ... in the local scope
 omarchy-shell yamz8.coveragechy copy                   # copies the selected id, echoes it
 omarchy-shell yamz8.coveragechy toggle                 # open / close
 ```
 
-`lookup` returns `ok`, or `empty query` when handed nothing. `copy` returns the
+`lookup` takes an optional scope (`national` or `local`) as its second
+argument. It returns `ok`, or `empty query` when handed nothing. `copy` returns the
 id it put on the clipboard, or `no selection`.
 
 ## Omarchy integration

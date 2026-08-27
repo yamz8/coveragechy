@@ -13,6 +13,6 @@
 - Resolve the site-relative URLs national results carry, and leave the
   absolute ones local results carry alone.
 - Add `lookup` and `copy` IPC methods so a keybinding or script can drive the
-  widget.
+  widget; `lookup` takes an optional scope as its second argument.
 - Add native Omarchy components and a theme-aware Nerd Font bar icon.
 - Clear query and results on close and show reference-use guidance.
