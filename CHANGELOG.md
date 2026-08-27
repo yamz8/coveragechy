@@ -12,7 +12,11 @@
   retirement warning per result.
 - Resolve the site-relative URLs national results carry, and leave the
   absolute ones local results carry alone.
-- Add `lookup` and `copy` IPC methods so a keybinding or script can drive the
-  widget; `lookup` takes an optional scope as its second argument.
+- Add `lookup`, `lookupIn`, and `copy` IPC methods so a keybinding or script
+  can drive the widget; `lookupIn` picks the scope up front.
 - Add native Omarchy components and a theme-aware Nerd Font bar icon.
+- Clear the search field along with the rest of the panel state, so repeating
+  a query after closing the panel searches instead of silently doing nothing.
+- Replay a lookup that arrives while a request is in flight rather than
+  dropping it, so the newest query wins.
 - Clear query and results on close and show reference-use guidance.

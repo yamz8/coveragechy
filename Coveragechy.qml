@@ -50,6 +50,9 @@ Panel {
   property int selectedIndex: 0
   property bool searching: false
   property bool aborting: false
+  // A lookup that arrives while a request is in flight is remembered
+  // rather than dropped, and replayed once that request settles.
+  property bool pendingSearch: false
   property string errorText: ""
   property string copiedId: ""
 
@@ -72,8 +75,15 @@ Panel {
 
   function clearSensitiveState() {
     root.aborting = true;
+    root.pendingSearch = false;
     root.stopRequests();
     root.query = "";
+    // The field owns the text once it has been typed in, so clearing the
+    // query alone would leave the panel showing a term it no longer holds -
+    // and a later lookup of that same term would set text to what it already
+    // was, fire no change, and search for nothing.
+    if (searchField)
+      searchField.text = "";
     root.resultsQuery = "";
     root.lastSignature = "";
     root.results = [];
@@ -84,11 +94,24 @@ Panel {
     root.copiedId = "";
   }
 
+  // Called wherever a request settles. Replaying through callLater keeps
+  // runSearch off its own call stack.
+  function replayPendingSearch() {
+    if (!root.pendingSearch)
+      return;
+
+    root.pendingSearch = false;
+    Qt.callLater(function () {
+      root.runSearch();
+    });
+  }
+
   function failWith(message) {
     root.searching = false;
     root.results = [];
     root.totalCount = 0;
     root.errorText = message;
+    root.replayPendingSearch();
   }
 
   // The request is a single JSON-RPC POST. curl is capped twice over:
@@ -118,9 +141,10 @@ Panel {
       searchField.forceActiveFocus();
       return;
     }
-    if (root.searching)
+    if (root.searching) {
+      root.pendingSearch = true;
       return;
-
+    }
     root.aborting = false;
     root.searching = true;
     root.errorText = "";
@@ -156,6 +180,7 @@ Panel {
     root.selectedIndex = 0;
     root.searching = false;
     root.errorText = parsed.documents.length === 0 ? "No coverage document matched — try a single word, or the other scope" : "";
+    root.replayPendingSearch();
   }
 
   function networkError(exitCode) {
@@ -216,6 +241,25 @@ Panel {
   function openDatabase() {
     Quickshell.execDetached(["omarchy-launch-browser", Coverage.DATABASE_URL]);
     root.close();
+  }
+
+  // Shared by the lookup IPC methods. The text is written to the field rather
+  // than to root.query, because the field owns the query once it has been
+  // typed in and would otherwise keep showing the previous term.
+  function startLookup(query, mode) {
+    var normalized = String(query || "").trim();
+    if (normalized === "")
+      return "empty query";
+
+    root.open();
+    if (String(mode || "").trim() !== "") {
+      root.scope = Coverage.scopeKey(mode);
+    }
+    searchField.text = normalized;
+    Qt.callLater(function () {
+      root.runSearch();
+    });
+    return "ok";
   }
 
   function handleKey(event) {
@@ -279,23 +323,17 @@ Panel {
     // The text is written to the field rather than to root.query, because the
     // field owns the query once it has been typed in and would otherwise keep
     // showing the previous term.
-    // The optional second argument picks the scope, so a keybinding can go
-    // straight to the local determinations:
-    //   omarchy-shell yamz8.coveragechy lookup "oxygen" local
-    function lookup(query: string, scope: string): string {
-      var normalized = String(query || "").trim();
-      if (normalized === "")
-        return "empty query";
-
-      root.open();
-      if (String(scope || "").trim() !== "")
-        root.scope = Coverage.scopeKey(scope);
-
-      searchField.text = normalized;
-      Qt.callLater(function () {
-        root.runSearch();
-      });
-      return "ok";
+    // Quickshell requires every declared IPC parameter, so the one-argument
+    // form lives in its own function rather than taking an optional second
+    // argument that callers would then always have to supply.
+    //   omarchy-shell yamz8.coveragechy lookup "local"
+    function lookup(query: string): string {
+      return root.startLookup(query, "");
+    }
+    // Same, but picking the scope up front:
+    //   omarchy-shell yamz8.coveragechy lookupIn "oxygen" local
+    function lookupIn(query: string, scope: string): string {
+      return root.startLookup(query, scope);
     }
     // Copy whatever is selected, so a keybinding can pair with lookup to put
     // the closest document id on the clipboard without touching the panel.
