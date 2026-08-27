@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "yamz8.coveragechy",
+  "name": "coveragechy",
+  "version": "1.0.0",
+  "author": "yamz8",
+  "license": "MIT",
+  "description": "Search Medicare national and local coverage determinations from the Omarchy bar",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Coveragechy.qml"
+  },
+  "barWidget": {
+    "displayName": "coveragechy",
+    "description": "Search Medicare NCDs and LCDs by keyword",
+    "category": "Science",
+    "defaultSection": "right",
+    "allowMultiple": false,
+    "defaults": {
+      "defaultScope": "national",
+      "resultLimit": 8
+    },
+    "schema": [
+      {
+        "key": "defaultScope",
+        "type": "enum",
+        "label": "Coverage scope searched first",
+        "options": [
+          "national",
+          "local"
+        ],
+        "defaultValue": "national"
+      },
+      {
+        "key": "resultLimit",
+        "type": "integer",
+        "label": "Results shown",
+        "min": 5,
+        "max": 12,
+        "step": 1,
+        "defaultValue": 8
+      }
+    ]
+  }
+}
