@@ -20,3 +20,4 @@
 - Replay a lookup that arrives while a request is in flight rather than
   dropping it, so the newest query wins.
 - Clear query and results on close and show reference-use guidance.
+- Drop the LIVE badge from the panel header.

@@ -404,7 +404,6 @@ Panel {
         width: parent.width
         title: "coveragechy"
         meta: "Medicare coverage database — NCDs and LCDs"
-        detail: "LIVE"
         foreground: root.foreground
         fontFamily: root.fontFamily
 
